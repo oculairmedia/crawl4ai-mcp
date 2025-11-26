@@ -47,42 +47,31 @@ class Crawl4aiMd(BaseHandler):
     async def run_tool(self, arguments: Dict[str, Any]) -> Sequence[TextContent]:
         """Execute markdown conversion via crawl4ai API"""
         try:
-            # API требует urls (массив), а не url
-            request_data = {
-                "urls": [arguments["url"]],  # API ожидает массив URLs
-                "wait_for": "body",
-                "timeout": 30000,
-                "remove_overlay_elements": True,
-                "magic": True,
-                "exclude_external_links": True
+            # Build request for /md endpoint with optional filter parameters
+            request_data: Dict[str, Any] = {
+                "url": arguments["url"],
             }
-            
-            # Вызываем /crawl endpoint вместо /md
-            result = await self.call_crawl4ai_api("crawl", request_data)
-            
-            # API возвращает массив результатов для каждого URL
-            if isinstance(result, list) and len(result) > 0:
-                first_result = result[0]
-                if isinstance(first_result, dict):
-                    # Извлекаем markdown из первого результата
-                    content = first_result.get("markdown", "")
-                    if not content and "markdown_v2" in first_result:
-                        # Используем markdown_v2 если обычного markdown нет
-                        markdown_v2 = first_result.get("markdown_v2", {})
-                        content = markdown_v2.get("raw_markdown", str(first_result))
-                    elif not content:
-                        # Fallback на весь результат
-                        content = str(first_result)
-                else:
-                    content = str(result)
-            elif isinstance(result, dict) and "markdown" in result:
-                # На случай если API вернет объект, а не массив
-                content = result["markdown"]
+
+            if "f" in arguments:
+                request_data["f"] = arguments["f"]
+            if "q" in arguments:
+                request_data["q"] = arguments["q"]
+            if "c" in arguments:
+                request_data["c"] = arguments["c"]
+            if "provider" in arguments:
+                request_data["provider"] = arguments["provider"]
+
+            # Call dedicated /md endpoint to leverage LLM/BM25 filters
+            result = await self.call_crawl4ai_api("md", request_data)
+
+            # /md returns a simple object with markdown content
+            if isinstance(result, dict):
+                content = result.get("markdown", "") or str(result)
             else:
                 content = str(result)
-            
+
             return [TextContent(type="text", text=content)]
-            
+
         except Exception as e:
             return [TextContent(type="text", text=f"Error converting to markdown: {str(e)}")]
 

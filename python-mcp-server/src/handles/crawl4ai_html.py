@@ -28,31 +28,20 @@ class Crawl4aiHtml(BaseHandler):
     async def run_tool(self, arguments: Dict[str, Any]) -> Sequence[TextContent]:
         """Execute HTML extraction via crawl4ai API"""
         try:
-            # API требует urls (массив), а не url
+            # Use dedicated /html endpoint to fetch cleaned HTML
             request_data = {
-                "urls": [arguments["url"]],
-                "wait_for": "body",
-                "timeout": 30000,
-                "remove_overlay_elements": True
+                "url": arguments["url"],
             }
-            
-            # Используем /crawl endpoint
-            result = await self.call_crawl4ai_api("crawl", request_data)
-            
-            # Обрабатываем массив результатов
-            if isinstance(result, list) and len(result) > 0:
-                first_result = result[0]
-                if isinstance(first_result, dict):
-                    content = first_result.get("html", first_result.get("cleaned_html", str(first_result)))
-                else:
-                    content = str(result)
-            elif isinstance(result, dict) and "html" in result:
-                content = result["html"]
+
+            result = await self.call_crawl4ai_api("html", request_data)
+
+            if isinstance(result, dict):
+                content = result.get("cleaned_html", result.get("html", str(result)))
             else:
                 content = str(result)
-            
+
             return [TextContent(type="text", text=str(content) if content is not None else "")]
-            
+
         except Exception as e:
             return [TextContent(type="text", text=f"Error extracting HTML: {str(e)}")]
 

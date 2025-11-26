@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, Sequence, List
 from mcp import Tool
 from mcp.types import TextContent
-from config.settings import settings
+from ..config.settings import settings
 
 logger = logging.getLogger(__name__)
 

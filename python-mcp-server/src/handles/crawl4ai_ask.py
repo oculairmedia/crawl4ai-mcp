@@ -56,25 +56,29 @@ class Crawl4aiAsk(BaseHandler):
             # For ask endpoint, we might need to use GET with params instead of POST
             # This is a special case since it's documentation query
             import httpx
-            from config.settings import settings
+            from ..config.settings import settings
             
             url = settings.get_crawl4ai_url("ask")
             
             async with httpx.AsyncClient(timeout=settings.REQUEST_TIMEOUT) as client:
                 headers = {}
-                if settings.BEARER_TOKEN:
-                    headers["Authorization"] = f"Bearer {settings.BEARER_TOKEN}"
+                if settings.CRAWL4AI_BEARER_TOKEN:
+                    headers["Authorization"] = f"Bearer {settings.CRAWL4AI_BEARER_TOKEN}"
                 
                 # Try GET first, then POST if needed
                 try:
                     response = await client.get(url, params=params, headers=headers)
                     response.raise_for_status()
-                except:
+                except Exception:
                     # Fallback to POST if GET doesn't work
                     response = await client.post(url, json=arguments, headers=headers)
                     response.raise_for_status()
                 
-                result = response.text if response.headers.get("content-type", "").startswith("text") else response.json()
+                result = (
+                    response.text
+                    if response.headers.get("content-type", "").startswith("text")
+                    else response.json()
+                )
             
             # Format result
             if isinstance(result, dict):

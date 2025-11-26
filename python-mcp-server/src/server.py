@@ -16,8 +16,8 @@ from starlette.routing import Route, Mount
 from starlette.types import Scope, Receive, Send
 
 # Import наши конфиги и tools
-from config.settings import settings
-from handles import ToolRegistry
+from .config.settings import settings
+from .handles import ToolRegistry
 
 # Настройка логирования
 logging.basicConfig(
@@ -145,6 +145,11 @@ def run_streamable_http(json_response: bool = False) -> None:
     )
     uvicorn.run(starlette, host="0.0.0.0", port=settings.HTTP_PORT)
 
+def main() -> None:
+    """Entry point used by unit tests and CLI wrappers."""
+    logger.info("Starting crawl4ai MCP server in StreamableHTTP mode on port 3000")
+    run_streamable_http(False)
+
 if __name__ == "__main__":
     import sys
     
@@ -160,5 +165,5 @@ if __name__ == "__main__":
         run_sse()
     else:
         # По умолчанию: StreamableHTTP режим для web integration
-        logger.info("Starting crawl4ai MCP server in StreamableHTTP mode on port 3000")
-        run_streamable_http(False)
+        main()
+
