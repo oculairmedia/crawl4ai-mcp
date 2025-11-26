@@ -106,7 +106,7 @@ def run_streamable_http(json_response: bool = False) -> None:
     logger.info(f"Starting crawl4ai MCP server in StreamableHTTP mode on port {settings.HTTP_PORT}")
     
     # Import the correct EventStore
-    from event_store import CorrectEventStore
+    from .event_store import CorrectEventStore
     
     # Use the fixed EventStore with proper signature
     event_store = CorrectEventStore()

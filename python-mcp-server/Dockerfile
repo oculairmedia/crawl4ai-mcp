@@ -42,9 +42,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose ports
 EXPOSE 3000 9000
 
-# Default command (StreamableHTTP mode)
-CMD ["python", "src/server.py"]
+# Default command (StreamableHTTP mode) - run as module to support relative imports
+CMD ["python", "-m", "src.server"]
 
 # Alternative commands:
-# SSE mode: CMD ["python", "src/server.py", "--sse"]  
-# STDIO mode: CMD ["python", "src/server.py", "--stdio"]
+# SSE mode: CMD ["python", "-m", "src.server", "--sse"]  
+# STDIO mode: CMD ["python", "-m", "src.server", "--stdio"]
